@@ -2,7 +2,7 @@
 
 ## 1. MongoDB Atlas
 
-1. Create a MongoDB Atlas cluster and database user. Allow the application host's IP (or a suitable production network range) in Network Access.
+1. Create a MongoDB Atlas cluster and database user. Allow the application host's IP (or a suitable production network range) in Network Access. Atlas hosts the database; it is not deployed to Vercel.
 2. Copy the application connection string and configure it as Render's `MONGODB_URI`. URL-encode special characters in the database password. Set `MONGODB_DB_NAME=dhobi_wala`.
 3. Atlas runs as a replica set, which is required for transactional orders, coupon redemption, payment updates, and employee task transitions.
 4. Mongoose creates collections and indexes from `backend/src/models/index.js` when the service connects. Seed the catalog with `npm --workspace backend run seed` from a one-off Render shell or a trusted local connection.
@@ -18,19 +18,28 @@
 
 ## 3. Backend on Render
 
-1. Create a Web Service from the repository with the repository root as its build context so npm workspaces can resolve the lockfile.
-2. Build command: `npm install`. Start command: `npm run start --workspace backend`.
-3. Add `NODE_ENV=production`, Render's `PORT`, `FRONTEND_URL=https://your-frontend-domain`, `MONGODB_URI`, `MONGODB_DB_NAME`, `SUPABASE_URL`, and `SUPABASE_ANON_KEY`.
-4. Add Supabase service-role and Razorpay keys only when those administrative/payment operations are enabled.
-5. Use `/health` as the health-check path.
+1. In Render, choose **New → Blueprint** and connect `sunnysunny15648-hash/dhobiwala`. Render reads the checked-in `render.yaml` at the repository root.
+2. Set the prompted `MONGODB_URI` to the Atlas connection string; set `FRONTEND_URL` to the eventual Vercel site origin. Set `SUPABASE_URL` and `SUPABASE_ANON_KEY` for sign-in. The service-role key is only needed for admin Auth operations and stays on Render.
+3. Render uses `npm install`, `npm run start --workspace backend`, and `/health` from the Blueprint. It supplies `PORT` automatically.
+4. After the service is live, run `npm --workspace backend run seed` from a trusted local connection or a Render shell to add the initial service and clothing catalog.
 
 ## 4. Frontend on Vercel
 
-1. Import the repository. Use repository root so npm workspaces resolve correctly.
-2. Framework preset: Vite. Build command: `npm run build`. Output directory: `frontend/dist`.
-3. Set `VITE_API_URL=https://your-render-service/api`. No database URI or Supabase keys go in frontend variables.
-4. Add SPA rewrites if Vercel does not automatically route React Router paths back to `index.html`.
-5. Set Render `FRONTEND_URL` to the exact production frontend origin and redeploy the API.
+1. In Vercel, choose **Add New → Project** and import `sunnysunny15648-hash/dhobiwala`.
+2. Set **Root Directory** to `.` (the repository root), not `frontend`, so the npm workspace and root lockfile are used.
+3. Use Framework Preset **Vite**. The checked-in `vercel.json` sets install command `npm install`, build command `npm run build`, output directory `frontend/dist`, and React Router SPA fallback.
+4. In **Project Settings → Environment Variables**, add `VITE_API_URL` with the full Render API URL, for example `https://your-render-service.onrender.com/api`. Add it to Production (and Preview if desired), then redeploy. Do not put MongoDB or Supabase service-role credentials in Vercel; the frontend calls the API for data/auth.
+5. After Vercel assigns a domain, set Render's `FRONTEND_URL` to that exact origin, such as `https://dhobiwala.vercel.app`, then redeploy the backend so CORS allows the frontend.
+6. In Supabase **Authentication → URL Configuration**, add the Vercel URL to the redirect allowlist for password recovery. Supabase is used for Auth only.
+7. Test the homepage, `/login`, and a direct deep link such as `/services`; verify the API health endpoint and browser Network panel for API requests.
+
+## Connection Order
+
+1. Create Atlas and keep the MongoDB URI private.
+2. Import the repo into Vercel and deploy once to obtain the assigned frontend domain. The UI can build without `VITE_API_URL`, but API-backed features will not work yet.
+3. Create the Render Blueprint service. Enter the Atlas URI, Supabase Auth values, and the Vercel domain as `FRONTEND_URL`; copy the Render service URL after it is live.
+4. Add `VITE_API_URL=https://<render-service>.onrender.com/api` to Vercel and redeploy the frontend.
+5. If you later change the Vercel domain, update Render `FRONTEND_URL` to the exact new origin and redeploy the backend.
 
 ## 5. Razorpay
 

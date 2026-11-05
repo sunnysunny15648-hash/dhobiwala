@@ -36,6 +36,7 @@ database/
 docs/
   API_DOCUMENTATION.md
   DEPLOYMENT.md
+render.yaml             Render backend service blueprint
 ```
 
 ## Requirements
