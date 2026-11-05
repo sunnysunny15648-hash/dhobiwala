@@ -19,6 +19,7 @@ export async function register(req, res) {
   if (error) throw new ApiError(400, error.message);
   const profile = data.user
     ? await Profile.findByIdAndUpdate(
+        data.user.id,
         {
           $setOnInsert: {
             full_name,
@@ -103,6 +104,8 @@ export async function requestPasswordReset(req, res) {
 }
 
 export async function updatePassword(req, res) {
+  if (!supabaseAdmin)
+    throw new ApiError(503, "Supabase Auth admin key is not configured.");
   const password = req.body.password;
   if (
     typeof password !== "string" ||

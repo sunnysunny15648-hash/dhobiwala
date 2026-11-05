@@ -3,6 +3,8 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { env } from "./config/env.js";
+import { isMongoConnected } from "./config/mongo.js";
+import { hasSupabaseAuth } from "./config/env.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -56,6 +58,19 @@ app.use(
 app.get("/health", (_req, res) =>
   res.json({ success: true, service: "dhobi-wala-api", status: "ok" }),
 );
+app.get("/health/ready", (_req, res) => {
+  const checks = {
+    mongodb: isMongoConnected(),
+    auth: hasSupabaseAuth,
+  };
+  const ready = Object.values(checks).every(Boolean);
+  return res.status(ready ? 200 : 503).json({
+    success: ready,
+    service: "dhobi-wala-api",
+    status: ready ? "ready" : "not_ready",
+    checks,
+  });
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/services", serviceRoutes);

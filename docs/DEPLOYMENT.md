@@ -20,7 +20,7 @@
 
 1. In Render, choose **New → Blueprint** and connect `sunnysunny15648-hash/dhobiwala`. Render reads the checked-in `render.yaml` at the repository root.
 2. Set the prompted `MONGODB_URI` to the Atlas connection string; set `FRONTEND_URL` to the eventual Vercel site origin. Set `SUPABASE_URL` and `SUPABASE_ANON_KEY` for sign-in. The service-role key is only needed for admin Auth operations and stays on Render.
-3. Render uses `npm install`, `npm run start --workspace backend`, and `/health` from the Blueprint. It supplies `PORT` automatically.
+3. Render uses `npm install`, `npm run start --workspace backend`, and `/health/ready` from the Blueprint. It supplies `PORT` automatically. `/health` is a liveness check; `/health/ready` confirms MongoDB and Supabase Auth configuration.
 4. After the service is live, run `npm --workspace backend run seed` from a trusted local connection or a Render shell to add the initial service and clothing catalog.
 
 ## 4. Frontend on Vercel

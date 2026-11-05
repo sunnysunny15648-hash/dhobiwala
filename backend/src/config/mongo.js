@@ -20,3 +20,7 @@ export function ensureMongo() {
     throw error;
   }
 }
+
+export function isMongoConnected() {
+  return mongoose.connection.readyState === 1;
+}
