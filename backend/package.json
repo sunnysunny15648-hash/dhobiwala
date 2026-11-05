@@ -1,0 +1,24 @@
+{
+  "name": "@dhobi-wala/backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "seed": "node src/scripts/seed.js",
+    "promote-admin": "node src/scripts/promoteAdmin.js",
+    "check": "node --check src/server.js && node --check src/app.js && node --test"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "mongoose": "^9.12.0",
+    "razorpay": "^2.9.5",
+    "zod": "^4.6.7"
+  }
+}
